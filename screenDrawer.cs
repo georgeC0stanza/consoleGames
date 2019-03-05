@@ -3,8 +3,12 @@ using System.Threading;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 /******************************************
+ * a simple console drawing application. Yeah it's far from MS paint, but it works fine
+ * if you're okay with some harmless glitches. 
+ * 
  * i want to add features but man this really needs to be cleaned up baaad!
  * //todo change to pascal case because i didn't realize that was a c# thing.
  * i wonder what else i'm not doing the c# way..
@@ -15,8 +19,8 @@ namespace ConsoleApp1
     {
         public const int SIZE_WIDTH = 100;
         public const int SIZE_HEIGHT = 50;
-        public static int posLeft = 0;
-        public static int posTop = 0;
+        public static int PosLeft = 0;
+        public static int PosTop = 0;
 
         private static char[] colorList = new char[] { 'M', 'm', 'R', 'r', 'Y', 'y', 'G', 'g', 'C', 'c', 'B', 'b', 'L', 'K', 'k', 'W' };
         private static char[] shapeList = new char[] { ' ', '░', '▒', '▓', '█' };
@@ -77,142 +81,175 @@ namespace ConsoleApp1
             // run game
             while (true)
             {
+                UserInterfaceSelectionScreen();
 
-                // main screen - color picking screen
-                Console.SetCursorPosition(3, 2);
-                Console.BackgroundColor = ConsoleColor.Black;
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Press Esc to quit.....\n");
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine("\tChoose a color + shape!");
-                Console.WriteLine("\tPress space to select + enter to start drawing!");
+                // need a goto for when we press return // i don't remember what this was for?
+
+                UserInterfaceDrawScreen();
+
+                saveToDisk("test");
+            }
+        }
 
 
+        /**
+         * wow.. this is really getting unruly.. maybe we oughtta separate the shape and the colors..
+         ******************************************************************************/
+        public static void SelectionScreenHelper(string type, string promptText, int slotNumber)
+        {
+            int TempPositionTop = 0;
+            int TempPositionLeft = 5;
+            int Padding = 2;
+            var Length = 0;
 
-                // choose foreground color
-                Console.SetCursorPosition(5, 8);
-                Console.WriteLine("Foreground Color:");
-                Console.SetCursorPosition(5, 10);
+            Debug.Assert(slotNumber <= 3 && slotNumber > 0, "SelectionScreenHelper: slotNumber is invalid");
+            switch (slotNumber)
+            {
+                case 1:
+                    TempPositionTop = 8;
+                    break;
+                case 2:
+                    TempPositionTop = 15;
+                    break;
+                case 3:
+                    TempPositionTop = 20;
+                    break;
+                default:
+                    TempPositionTop = 8;
+                    break;
+            }
 
-                posLeft += 5;
-                posTop += 10;
+            Console.SetCursorPosition(TempPositionLeft, TempPositionTop);
+            Console.WriteLine(promptText);
+            Console.SetCursorPosition(TempPositionLeft, TempPositionTop + Padding);
+
+            PosLeft += TempPositionLeft;
+            PosTop += TempPositionTop;
+
+            if (type == "ForegroundColor")
+            {
+                Length = colorList.Length;
+            }
+            else if (type == "BackgroundColor")
+            {
+                Length = colorList.Length;
+            }
+            else if (type == "Shape")
+            {
+                Length = shapeList.Length;
+            }
+
+            if (type == "Shape")
+            {
                 while (!isSelect) // run until *spacebar* is depressed
                 {
-                    Console.SetCursorPosition(5, 10);
-                    foreach (char color in colorList)
-                    {
-                        setConsoleColors(color, 'L');
-                        Console.Write('█');
-                    }
-
-                    boundsKeeper(5, 4 + colorList.Length, 10, 10, ref posLeft, ref posTop);
-                    Console.SetCursorPosition(posLeft, posTop);
-                    setConsoleColors('w', 'L');
-                    Console.Write('░'); // makeshift cursor
-
-                }
-
-                selectedFore = colorList[posLeft - 5]; // set the color to the one selected
-                isSelect = false; // reset *spacebar*
-                posTop = posLeft = 0;
-
-
-
-                // choose the background color
-                Console.SetCursorPosition(5, 15);
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine("Background Color:");
-                Console.SetCursorPosition(5, 17);
-                posLeft += 5;
-                posTop += 17;
-                while (!isSelect) // run until *spacebar* is depressed
-                {
-                    Console.SetCursorPosition(5, 17);
-                    foreach (char color in colorList)
-                    {
-                        setConsoleColors(color, 'L');
-                        Console.Write('█');
-                    }
-                    boundsKeeper(5, 4 + colorList.Length, 17, 17, ref posLeft, ref posTop);
-                    Console.SetCursorPosition(posLeft, posTop);
-                    setConsoleColors('w', 'L');
-                    Console.Write('░'); // makeshift cursor
-
-                }
-                selectedBack = colorList[posLeft - 5]; // set the color to the one selected
-                isSelect = false; // reset *spacebar*
-                posTop = posLeft = 0;
-
-
-
-                // choose the drawing character/shape
-                Console.SetCursorPosition(5, 20);
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine("And your shape please:");
-                Console.SetCursorPosition(5, 23);
-                posLeft += 5;
-                posTop += 23;
-                while (!isSelect)// run until *spacebar* is depressed
-                {
-                    Console.SetCursorPosition(5, 23);
+                    Console.SetCursorPosition(TempPositionLeft, TempPositionTop + Padding);
                     setConsoleColors(selectedFore, selectedBack);
 
                     foreach (char shape in shapeList)
                     {
                         Console.Write(shape);
                     }
-                    boundsKeeper(5, 4 + shapeList.Length, 23, 23, ref posLeft, ref posTop);
-                    Console.SetCursorPosition(posLeft, posTop);
+                    boundsKeeper(TempPositionLeft, TempPositionLeft + Length - 1, TempPositionTop + Padding, TempPositionTop + Padding, ref PosLeft, ref PosTop);
+                    Console.SetCursorPosition(PosLeft, PosTop);
                     setConsoleColors('c', 'L');
                     Console.Write('░'); // makeshift cursor
-
                 }
-                selectedShape = shapeList[posLeft - 5]; // set the color to the one selected
-                isSelect = false; // reset *spacebar*
-                posTop = posLeft = 0;
-
-
-                // need a goto for when we press return
-
-                Console.Clear();
-                Console.SetCursorPosition(0, 0);
-                posTop = posLeft = 0;
-
-                setConsoleColors(selectedFore, selectedBack);
-                while (!isF)
-                {
-                    boundsKeeper(0, SIZE_WIDTH - 1, SIZE_HEIGHT - 1, 0, ref posLeft, ref posTop);
-                    Console.SetCursorPosition(posLeft, posTop);
-                    Console.Write(selectedShape);
-                    // Console.Clear();
-                    Console.SetCursorPosition(0, 0);
-                    //Console.BackgroundColor = ConsoleColor.Black;
-                    for (int row = 0; row < SIZE_HEIGHT; ++row)
-                    {
-                        for (int col = 0; col < SIZE_WIDTH; ++col)
-                        {
-                            setConsoleColors(consoleForegroundColorCharmap[row, col], consoleBackgroundColorCharmap[row, col]);
-                            Console.Write(consoleCharmap[row, col]);
-                        }
-                        Console.WriteLine(' ');
-                    }
-                    boundsKeeper(0, SIZE_WIDTH - 1, SIZE_HEIGHT - 1, 0, ref posLeft, ref posTop);
-                    Console.SetCursorPosition(posLeft, posTop);
-                    Console.Write(selectedShape);
-                    if (isSelect)
-                    {
-                        boundsKeeper(0, SIZE_WIDTH - 1, SIZE_HEIGHT - 1, 0, ref posLeft, ref posTop);
-                        consoleCharmap[posTop, posLeft] = selectedShape;
-                        consoleForegroundColorCharmap[posTop, posLeft] = selectedFore;
-                        consoleBackgroundColorCharmap[posTop, posLeft] = selectedBack;
-                        isSelect = false;
-                    }
-                    //Thread.Sleep(100);
-                }
-                isF = false;
-                saveToDisk("test");
             }
+            else
+            {
+                while (!isSelect) // run until *spacebar* is depressed
+                {
+                    Console.SetCursorPosition(TempPositionLeft, TempPositionTop + Padding);
+                    foreach (char color in colorList)
+                    {
+                        setConsoleColors(color, 'L');
+                        Console.Write('█');
+                    }
+
+                    boundsKeeper(TempPositionLeft, TempPositionLeft + Length - 1, TempPositionTop + Padding, TempPositionTop + Padding, ref PosLeft, ref PosTop);
+                    Console.SetCursorPosition(PosLeft, PosTop);
+                    setConsoleColors('w', 'L');
+                    Console.Write('░'); // makeshift cursor
+                }
+
+            }
+
+
+            if (type == "ForegroundColor")
+            {
+                selectedFore = colorList[PosLeft - TempPositionLeft]; // set the color to the one selected
+            }
+            else if (type == "BackgroundColor")
+            {
+                selectedBack = colorList[PosLeft - TempPositionLeft]; // set the color to the one selected
+            }
+            else if (type == "Shape")
+            {
+                selectedShape = shapeList[PosLeft - 5]; // set the shape to the one selected
+            }
+
+            isSelect = false; // reset *spacebar*
+            PosTop = PosLeft = 0;
         }
+
+        public static void UserInterfaceSelectionScreen()
+        {
+            // main screen - color picking screen
+            Console.SetCursorPosition(3, 2);
+            Console.BackgroundColor = ConsoleColor.Black;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Press Esc to quit.....\n");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("\tChoose a color + shape!");
+            Console.WriteLine("\tPress space to select + enter to start drawing!");
+
+            SelectionScreenHelper("ForegroundColor", "Foreground Color:", 1);
+            SelectionScreenHelper("BackgroundColor", "Background Color:", 2);
+            SelectionScreenHelper("Shape", "And your shape please: ", 3);        
+        }
+
+        public static void UserInterfaceDrawScreen()
+        {
+            Console.Clear();
+            Console.SetCursorPosition(0, 0);
+            PosTop = PosLeft = 0;
+
+            setConsoleColors(selectedFore, selectedBack);
+            while (!isF)
+            {
+                boundsKeeper(0, SIZE_WIDTH - 1, SIZE_HEIGHT - 1, 0, ref PosLeft, ref PosTop);
+                Console.SetCursorPosition(PosLeft, PosTop);
+                Console.Write(selectedShape);
+                // Console.Clear();
+                Console.SetCursorPosition(0, 0);
+                //Console.BackgroundColor = ConsoleColor.Black;
+                for (int row = 0; row < SIZE_HEIGHT; ++row)
+                {
+                    for (int col = 0; col < SIZE_WIDTH; ++col)
+                    {
+                        setConsoleColors(consoleForegroundColorCharmap[row, col], consoleBackgroundColorCharmap[row, col]);
+                        Console.Write(consoleCharmap[row, col]);
+                    }
+                    Console.WriteLine(' ');
+                }
+                boundsKeeper(0, SIZE_WIDTH - 1, SIZE_HEIGHT - 1, 0, ref PosLeft, ref PosTop);
+                Console.SetCursorPosition(PosLeft, PosTop);
+                Console.Write(selectedShape);
+                if (isSelect)
+                {
+                    boundsKeeper(0, SIZE_WIDTH - 1, SIZE_HEIGHT - 1, 0, ref PosLeft, ref PosTop);
+                    consoleCharmap[PosTop, PosLeft] = selectedShape;
+                    consoleForegroundColorCharmap[PosTop, PosLeft] = selectedFore;
+                    consoleBackgroundColorCharmap[PosTop, PosLeft] = selectedBack;
+                    isSelect = false;
+                }
+                //Thread.Sleep(100);
+            }
+            isF = false;
+        }
+
+
 
         /** 
          * save a drawing to disk  
@@ -230,7 +267,7 @@ namespace ConsoleApp1
             string savedText = JsonConvert.SerializeObject(jsonArray);
 
             File.WriteAllText(path, savedText);
-            
+
         }
 
 
@@ -262,19 +299,19 @@ namespace ConsoleApp1
                         break;
                     case ConsoleKey.W:
                     case ConsoleKey.UpArrow:
-                        --posTop;
+                        --PosTop;
                         break;
                     case ConsoleKey.S:
                     case ConsoleKey.DownArrow:
-                        ++posTop;
+                        ++PosTop;
                         break;
                     case ConsoleKey.D:
                     case ConsoleKey.RightArrow:
-                        ++posLeft;
+                        ++PosLeft;
                         break;
                     case ConsoleKey.A:
                     case ConsoleKey.LeftArrow:
-                        --posLeft;
+                        --PosLeft;
                         break;
                     case ConsoleKey.F:
                         isF = true;
@@ -425,4 +462,3 @@ namespace ConsoleApp1
         }
     }
 }
-
