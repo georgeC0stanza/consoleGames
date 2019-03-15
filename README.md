@@ -2,6 +2,8 @@
 messing around with the console in c#
 
 my attempt at learning c# form scratch
+still in progress. i need to continue seperating it out.
+i also need to figure out the what not to include when sending it here to github. do i send the visual studio files? i dunno.
 
 
 displays a text graphic in a 3x3 grid to the console with colors and the ability to move it around using the arrow keys.
