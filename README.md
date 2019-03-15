@@ -1,6 +1,7 @@
 # consoleGames
 messing around with the console in c#
 
+my attempt at learning c# form scratch
 
 
 displays a text graphic in a 3x3 grid to the console with colors and the ability to move it around using the arrow keys.
