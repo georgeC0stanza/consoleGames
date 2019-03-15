@@ -13,9 +13,9 @@ using System.Diagnostics;
  * //todo change to pascal case because i didn't realize that was a c# thing.
  * i wonder what else i'm not doing the c# way..
  * ****************************************/
-namespace ConsoleApp1
+namespace consgam.ScreenDrawer
 {
-    class Program
+    internal static class ScreenDrawerApp
     {
         public const int SIZE_WIDTH = 100;
         public const int SIZE_HEIGHT = 50;
@@ -46,7 +46,7 @@ namespace ConsoleApp1
          * we need to break this up.. 
          * and man is it ever bad. what's with the terrible logic?
          ******************************************************************************/
-        static void Main(string[] args)
+        public static void ScreenDrawMain()
         {
             // initialize the game
             Console.OutputEncoding = System.Text.Encoding.UTF8;
